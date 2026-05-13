@@ -1,0 +1,30 @@
+services:
+  backend:
+    command: sh -c "pnpm prisma migrate dev && pnpm dev"
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:

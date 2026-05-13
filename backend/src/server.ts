@@ -18,19 +18,9 @@ let prismaClient = new PrismaClient({
     adapter,
 });
 
-let client = await prismaClient.user.create({
-    data: {
-        name: "Pietro",
-        surname: "Valente",
-        email: "ciao@ciao.com",
-        password: "secret password",
-    }
-});
-
-console.log(client);
-
 await app.listen({
-    port: 8080
+  port: 3000,
+  host: "0.0.0.0",
 });
 
 process.on("SIGINT", async () => {
