@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User{
+  id          Int         @id @default(autoincrement())
+  name        String
+  surname     String
+  email       String      @unique
+  password    String
+
+  companies    Company[]
+  applications Application[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Company{
+  name          String         @id
+  website       String?
+  location      String?
+  notes         String?
+
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+
+  applications Application[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model Application{
+  id            Int         @id @default(autoincrement())
+  role          String
+  status        String
+  jobUrl        String?
+  description   String?
+  notes         String?
+  interviews    Interview[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  userId  Int
+  user    User  @relation(fields:[userId], references:[id])
+
+  companyName   String
+  company       Company   @relation(fields:[companyName], references:[name])
+
+  @@index([userId])
+  @@index([companyName])
+  @@index([status])
+}
+
+model Interview{
+  number        Int         @id
+  type          String
+  scheduledAt   DateTime
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  applicationId   Int
+  application     Application   @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId])
+}
