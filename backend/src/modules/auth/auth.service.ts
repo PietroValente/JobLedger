@@ -1,0 +1,106 @@
+import { Prisma } from "@prisma/client";
+import {
+  createUser,
+  CreateUserInput,
+  findUserByEmail,
+} from "./auth.repository.js";
+import { LoginInputType, RegisterInputType } from "./auth.schema.js";
+import argon2 from "argon2";
+import { FastifyInstance } from "fastify";
+import { jwtSign, verifyRefreshToken } from "../utils/token.js";
+
+export async function verifyLoginUser(
+  app: FastifyInstance,
+  data: LoginInputType,
+) {
+  const user = await findUserByEmail(app.prisma, data.email);
+
+  if (!user) {
+    throw app.httpErrors.unauthorized("Invalid credentials");
+  }
+
+  const validPassword = await argon2.verify(user.passwordHash, data.password);
+
+  if (!validPassword) {
+    throw app.httpErrors.unauthorized("Invalid credentials");
+  }
+  return user;
+}
+
+export async function registerUser(
+  app: FastifyInstance,
+  data: RegisterInputType,
+) {
+  const passwordHash = await argon2.hash(data.password);
+
+  try {
+    const input: CreateUserInput = {
+      name: data.name,
+      surname: data.surname,
+      email: data.email,
+      passwordHash,
+    };
+    const user = await createUser(app.prisma, input);
+    return user;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw app.httpErrors.conflict("Email already exists");
+    }
+
+    throw error;
+  }
+}
+
+export async function refreshAccessToken(
+  app: FastifyInstance,
+  token: string | undefined,
+) {
+  if (!token) {
+    throw app.httpErrors.unauthorized("Missing refresh token");
+  }
+
+  const [sessionId, secret] = token.split(".");
+
+  if (!sessionId || !secret) {
+    throw app.httpErrors.unauthorized("Invalid refresh token");
+  }
+
+  const session = await app.prisma.refreshSession.findUnique({
+    where: { id: sessionId },
+    include: { user: true },
+  });
+
+  if (!session || session.expiresAt < new Date()) {
+    throw app.httpErrors.unauthorized("Invalid refresh token");
+  }
+
+  const valid = await verifyRefreshToken(session.tokenHash, secret);
+
+  if (!valid) {
+    throw app.httpErrors.unauthorized("Invalid refresh token");
+  }
+
+  return jwtSign(app, session.userId, session.user.email);
+}
+
+export async function logoutUser(
+  app: FastifyInstance,
+  token: string | undefined,
+) {
+  if (!token) {
+    return;
+  }
+
+  const [sessionId] = token.split(".");
+
+  if (!sessionId) {
+    return;
+  }
+
+  await app.prisma.refreshSession.deleteMany({
+    where: { id: sessionId },
+  });
+}

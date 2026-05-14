@@ -1,5 +1,8 @@
 services:
   backend:
+    depends_on:
+      db:
+        condition: service_healthy
     command: sh -c "pnpm prisma migrate deploy && pnpm start"
     build:
       context: ./backend
@@ -9,8 +12,7 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
-    depends_on:
-      - db
+      JWT_SECRET: ${JWT_SECRET}
     restart: unless-stopped
 
   db:
@@ -19,6 +21,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jobledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     restart: unless-stopped

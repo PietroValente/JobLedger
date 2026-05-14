@@ -12,17 +12,30 @@ datasource db {
 }
 
 model User{
-  id          Int         @id @default(autoincrement())
-  name        String
-  surname     String
-  email       String      @unique
-  password    String
+  id              Int         @id @default(autoincrement())
+  name            String
+  surname         String
+  email           String      @unique
+  passwordHash    String
 
   companies    Company[]
   applications Application[]
+  refreshSessions RefreshSession[]
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model RefreshSession {
+  id          String      @id @default(uuid())
+  tokenHash   String
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Company{

@@ -1,5 +1,8 @@
 services:
   backend:
+    depends_on:
+      db:
+        condition: service_healthy
     command: sh -c "pnpm prisma migrate dev && pnpm prisma generate && pnpm dev"
     build:
       context: ./backend
@@ -9,11 +12,10 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - ./backend:/app
       - /app/node_modules
-    depends_on:
-      - db
 
   db:
     image: postgres:17
@@ -23,6 +25,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jobledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
 

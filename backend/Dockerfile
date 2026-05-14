@@ -5,6 +5,7 @@ WORKDIR /app
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 ENV CI=true
+ENV PNPM_CONFIG_DANGEROUSLY_ALLOW_ALL_BUILDS=true
 
 RUN apk add --no-cache \
     libc6-compat \
