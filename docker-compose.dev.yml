@@ -1,6 +1,6 @@
 services:
   backend:
-    command: sh -c "pnpm prisma migrate dev && pnpm dev"
+    command: sh -c "pnpm prisma migrate dev && pnpm prisma generate && pnpm dev"
     build:
       context: ./backend
       target: dev

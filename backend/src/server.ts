@@ -1,22 +1,6 @@
-import "dotenv/config";
-import fastify from "fastify";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { buildApp } from "./app.js";
 
-let app = fastify({
-    logger: true
-});
-app.get("/ping", async () => {
-    return "pong";
-});
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-let prismaClient = new PrismaClient({
-    adapter,
-});
+let app = await buildApp();
 
 await app.listen({
   port: 3000,
