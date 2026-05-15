@@ -1,14 +1,19 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import {
+  getCurrentUser,
   logoutUser,
   refreshAccessToken,
   registerUser,
   verifyLoginUser,
 } from "./auth.service.js";
 import {
+  ErrorOutputSchema,
   LoginInputSchema,
   LoginInputType,
   LoginOutputSchema,
+  LogoutOutputSchema,
+  MeOutputSchema,
+  RefreshOutputSchema,
   RegisterInputSchema,
   RegisterInputType,
   RegisterOutputSchema,
@@ -20,9 +25,15 @@ export async function authRoutes(app: FastifyInstance) {
     "/me",
     {
       preHandler: [app.authenticate],
+      schema: {
+        response: {
+          200: MeOutputSchema,
+          401: ErrorOutputSchema,
+        },
+      },
     },
     async (request) => {
-      return request.user;
+      return getCurrentUser(app, request.user.email);
     },
   );
 
@@ -33,6 +44,7 @@ export async function authRoutes(app: FastifyInstance) {
         body: LoginInputSchema,
         response: {
           200: LoginOutputSchema,
+          401: ErrorOutputSchema,
         },
       },
     },
@@ -56,6 +68,8 @@ export async function authRoutes(app: FastifyInstance) {
         body: RegisterInputSchema,
         response: {
           201: RegisterOutputSchema,
+          400: ErrorOutputSchema,
+          409: ErrorOutputSchema,
         },
       },
     },
@@ -72,22 +86,44 @@ export async function authRoutes(app: FastifyInstance) {
     },
   );
 
-  app.post("/refresh", async (request, reply) => {
-    const accessToken = await refreshAccessToken(
-      app,
-      request.cookies.refreshToken,
-    );
+  app.post(
+    "/refresh",
+    {
+      schema: {
+        response: {
+          200: RefreshOutputSchema,
+          401: ErrorOutputSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const accessToken = await refreshAccessToken(
+        app,
+        request.cookies.refreshToken,
+      );
 
-    return reply.status(200).send({ accessToken });
-  });
+      return reply.status(200).send({ accessToken });
+    },
+  );
 
-  app.post("/logout", async (request, reply) => {
-    await logoutUser(app, request.cookies.refreshToken);
+  app.post(
+    "/logout",
+    {
+      schema: {
+        response: {
+          200: LogoutOutputSchema,
+          401: ErrorOutputSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      await logoutUser(app, request.cookies.refreshToken);
 
-    reply.clearCookie("refreshToken", {
-      path: "/auth",
-    });
+      reply.clearCookie("refreshToken", {
+        path: "/auth",
+      });
 
-    return reply.status(200).send({ success: true });
-  });
+      return reply.status(200).send({ success: true });
+    },
+  );
 }

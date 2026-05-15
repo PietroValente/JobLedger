@@ -9,6 +9,16 @@ import argon2 from "argon2";
 import { FastifyInstance } from "fastify";
 import { jwtSign, verifyRefreshToken } from "../utils/token.js";
 
+export async function getCurrentUser(app: FastifyInstance, email: string) {
+  const user = await findUserByEmail(app.prisma, email);
+
+  if (!user) {
+    throw app.httpErrors.notFound("User not found");
+  }
+
+  return user;
+}
+
 export async function verifyLoginUser(
   app: FastifyInstance,
   data: LoginInputType,

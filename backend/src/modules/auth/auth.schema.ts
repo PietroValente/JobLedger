@@ -7,6 +7,13 @@ export const PublicUserSchema = z.object({
   email: z.email(),
 });
 
+export const ErrorOutputSchema = z.object({
+  statusCode: z.number(),
+  error: z.string(),
+  message: z.string(),
+});
+export type ErrorOutputType = z.infer<typeof ErrorOutputSchema>;
+
 export const AuthOutputSchema = z.object({
   user: PublicUserSchema,
   accessToken: z.string(),
@@ -32,4 +39,15 @@ export type LoginInputType = z.infer<typeof LoginInputSchema>;
 export const LoginOutputSchema = AuthOutputSchema;
 export type LoginOutputType = z.infer<typeof LoginOutputSchema>;
 
-//TODO: validate all the endpoints with schemas
+export const RefreshOutputSchema = z.object({
+  accessToken: z.string(),
+});
+export type RefreshOutputType = z.infer<typeof RefreshOutputSchema>;
+
+export const MeOutputSchema = PublicUserSchema;
+export type MeOutputType = z.infer<typeof MeOutputSchema>;
+
+export const LogoutOutputSchema = z.object({
+  success: z.boolean(),
+});
+export type LogoutOutputType = z.infer<typeof LogoutOutputSchema>;
