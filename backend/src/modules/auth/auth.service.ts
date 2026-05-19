@@ -2,12 +2,13 @@ import { Prisma } from "@prisma/client";
 import {
   createUser,
   CreateUserInput,
+  deleteSession,
   findUserByEmail,
 } from "./auth.repository.js";
 import { LoginInputType, RegisterInputType } from "./auth.schema.js";
 import argon2 from "argon2";
-import { FastifyInstance } from "fastify";
-import { jwtSign, verifyRefreshToken } from "../utils/token.js";
+import { FastifyInstance, FastifyReply } from "fastify";
+import { login, verifyRefreshToken } from "../utils/token.js";
 
 export async function getCurrentUser(app: FastifyInstance, email: string) {
   const user = await findUserByEmail(app.prisma, email);
@@ -66,6 +67,7 @@ export async function registerUser(
 
 export async function refreshAccessToken(
   app: FastifyInstance,
+  reply: FastifyReply,
   token: string | undefined,
 ) {
   if (!token) {
@@ -87,13 +89,20 @@ export async function refreshAccessToken(
     throw app.httpErrors.unauthorized("Invalid refresh token");
   }
 
+  const user = session.user;
   const valid = await verifyRefreshToken(session.tokenHash, secret);
 
   if (!valid) {
     throw app.httpErrors.unauthorized("Invalid refresh token");
   }
 
-  return jwtSign(app, session.userId, session.user.email);
+  await deleteSession(app.prisma, sessionId);
+
+  return await login({
+    app,
+    reply,
+    user,
+  });
 }
 
 export async function logoutUser(

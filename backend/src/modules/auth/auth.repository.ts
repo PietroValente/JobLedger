@@ -29,6 +29,10 @@ export async function createSession(
   });
 }
 
+export async function deleteSession(prisma: PrismaClient, id: string) {
+  return await prisma.refreshSession.delete({ where: { id } });
+}
+
 export async function findUserByEmail(prisma: PrismaClient, email: string) {
   return prisma.user.findUnique({ where: { email } });
 }

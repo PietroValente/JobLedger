@@ -97,18 +97,14 @@ export async function authRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const accessToken = await refreshAccessToken(
-        app,
-        request.cookies.refreshToken,
-      );
-
-      return reply.status(200).send({ accessToken });
+      await refreshAccessToken(app, reply, request.cookies.refreshToken);
     },
   );
 
   app.post(
     "/logout",
     {
+      preHandler: [app.authenticate],
       schema: {
         response: {
           200: LogoutOutputSchema,

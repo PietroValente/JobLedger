@@ -21,6 +21,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # --------------------
 FROM base AS dev
 
+RUN pnpm config set minimum-release-age 0
 RUN pnpm install
 
 COPY . .

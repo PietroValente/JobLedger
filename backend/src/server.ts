@@ -1,6 +1,7 @@
 import { buildApp } from "./app.js";
+import { prisma } from "./modules/utils/prisma.js";
 
-let app = await buildApp();
+let app = await buildApp(prisma);
 
 await app.listen({
   port: 3000,

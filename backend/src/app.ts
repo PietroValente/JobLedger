@@ -4,15 +4,15 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import { healthRoutes } from "./modules/health/health.routes.js";
-import prismaPlugin from "./plugins/prisma.js";
 import authPlugin from "./plugins/auth.js";
 import envPlugin from "./plugins/env.js";
 import sensiblePlugin from "@fastify/sensible";
 import jwtPlugin from "@fastify/jwt";
 import cookiePlugin from "@fastify/cookie";
 import { authRoutes } from "./modules/auth/auth.routes.js";
+import { PrismaClient } from "@prisma/client";
 
-export async function buildApp() {
+export async function buildApp(db: PrismaClient) {
   const app = Fastify({
     logger: {
       transport: {
@@ -47,13 +47,18 @@ export async function buildApp() {
     });
   });
 
+  //prisma decoration
+  app.decorate("prisma", db);
+  app.addHook("onClose", async () => {
+    await db.$disconnect();
+  });
+
   await app.register(envPlugin);
   await app.register(jwtPlugin, {
     secret: app.config.JWT_SECRET,
   });
   await app.register(cookiePlugin);
   await app.register(sensiblePlugin);
-  await app.register(prismaPlugin);
   await app.register(authPlugin);
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: "/auth" });
