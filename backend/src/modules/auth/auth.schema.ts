@@ -7,13 +7,6 @@ export const PublicUserSchema = z.object({
   email: z.email(),
 });
 
-export const ErrorOutputSchema = z.object({
-  statusCode: z.number(),
-  error: z.string(),
-  message: z.string(),
-});
-export type ErrorOutputType = z.infer<typeof ErrorOutputSchema>;
-
 export const AuthOutputSchema = z.object({
   user: PublicUserSchema,
   accessToken: z.string(),

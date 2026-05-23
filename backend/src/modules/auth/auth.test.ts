@@ -7,6 +7,7 @@ import {
   getInvalidAccessToken,
   registerUser,
 } from "../utils/test.js";
+import { RegisterInputType } from "./auth.schema.js";
 
 describe("POST /auth/register", () => {
   test("success - register a user", async () => {
@@ -16,7 +17,7 @@ describe("POST /auth/register", () => {
     const surname = faker.person.lastName();
     const email = faker.internet.email();
 
-    const payload = {
+    const payload: RegisterInputType = {
       name,
       surname,
       email,

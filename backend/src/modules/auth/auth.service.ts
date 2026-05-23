@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import {
   createUser,
-  CreateUserInput,
+  CreateUserData,
   deleteSession,
   findUserByEmail,
 } from "./auth.repository.js";
@@ -45,7 +45,7 @@ export async function registerUser(
   const passwordHash = await argon2.hash(data.password);
 
   try {
-    const input: CreateUserInput = {
+    const input: CreateUserData = {
       name: data.name,
       surname: data.surname,
       email: data.email,

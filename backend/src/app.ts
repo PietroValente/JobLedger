@@ -11,6 +11,7 @@ import jwtPlugin from "@fastify/jwt";
 import cookiePlugin from "@fastify/cookie";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { PrismaClient } from "@prisma/client";
+import { companiesRoutes } from "./modules/companies/companies.routes.js";
 
 export async function buildApp(db: PrismaClient) {
   const app = Fastify({
@@ -62,6 +63,7 @@ export async function buildApp(db: PrismaClient) {
   await app.register(authPlugin);
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: "/auth" });
+  await app.register(companiesRoutes, { prefix: "/companies" });
 
   return app;
 }

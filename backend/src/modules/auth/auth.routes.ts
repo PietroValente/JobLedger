@@ -7,7 +7,6 @@ import {
   verifyLoginUser,
 } from "./auth.service.js";
 import {
-  ErrorOutputSchema,
   LoginInputSchema,
   LoginInputType,
   LoginOutputSchema,
@@ -19,6 +18,7 @@ import {
   RegisterOutputSchema,
 } from "./auth.schema.js";
 import { login, LoginData } from "../utils/token.js";
+import { ErrorOutputSchema } from "../utils/schema.js";
 
 export async function authRoutes(app: FastifyInstance) {
   app.get(

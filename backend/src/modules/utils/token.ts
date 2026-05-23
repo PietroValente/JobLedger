@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import argon2 from "argon2";
 import { FastifyInstance, FastifyReply } from "fastify";
-import { createSession, CreateSessionInput } from "../auth/auth.repository.js";
+import { createSession, CreateSessionData } from "../auth/auth.repository.js";
 import { User } from "@prisma/client";
 
 const JWT_EXPIRES_TIME = "1m";
@@ -45,7 +45,7 @@ export async function generateTokens(
 ) {
   const accessToken = jwtSign(app, userId, email);
   const refresh = generateRefreshToken();
-  const session: CreateSessionInput = {
+  const session: CreateSessionData = {
     id: refresh.sessionId,
     userId: userId,
     tokenHash: await hashRefreshToken(refresh.secret),

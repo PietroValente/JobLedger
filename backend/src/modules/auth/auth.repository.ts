@@ -1,19 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 
-export type CreateUserInput = {
+export type CreateUserData = {
   name: string;
   surname: string;
   email: string;
   passwordHash: string;
 };
 
-export async function createUser(prisma: PrismaClient, user: CreateUserInput) {
+export async function createUser(prisma: PrismaClient, user: CreateUserData) {
   return await prisma.user.create({
     data: user,
   });
 }
 
-export type CreateSessionInput = {
+export type CreateSessionData = {
   id: string;
   userId: number;
   tokenHash: string;
@@ -22,7 +22,7 @@ export type CreateSessionInput = {
 
 export async function createSession(
   prisma: PrismaClient,
-  session: CreateSessionInput,
+  session: CreateSessionData,
 ) {
   return await prisma.refreshSession.create({
     data: session,
