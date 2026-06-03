@@ -43,6 +43,25 @@ describe("POST /auth/register", () => {
     });
   });
 
+  test("fail - duplicate email (409)", async () => {
+    const app = await buildApp(prisma);
+
+    const user = await registerUser(app);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/register",
+      payload: {
+        name: faker.person.firstName(),
+        surname: faker.person.lastName(),
+        email: user.email,
+        password: faker.internet.password(),
+      },
+    });
+
+    expect(res.statusCode).toBe(409);
+  });
+
   test("fail - bad input", async () => {
     const app = await buildApp(prisma);
 
@@ -124,6 +143,17 @@ describe("GET /auth/me", () => {
       surname: user.surname,
       email: user.email,
     });
+  });
+
+  test("fail - missing authorization header", async () => {
+    const app = await buildApp(prisma);
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/auth/me",
+    });
+
+    expect(res.statusCode).toBe(401);
   });
 
   test("fail - invalid access token", async () => {
@@ -212,6 +242,22 @@ describe("POST /auth/login - /auth/logout", () => {
     expect(loginCookies.some((c) => c.startsWith("refreshToken="))).toBe(true);
   });
 
+  test("fail - login with non-existent email", async () => {
+    const app = await buildApp(prisma);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: {
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      },
+    });
+
+    expect(res.statusCode).toBe(401);
+    expect(res.json()).toMatchObject({ message: "Invalid credentials" });
+  });
+
   test("fail - login with wrong password", async () => {
     const app = await buildApp(prisma);
 
@@ -294,6 +340,31 @@ describe("POST /auth/refresh", () => {
       url: "/auth/refresh",
       headers: {
         cookie: "refreshToken=invalid-token",
+      },
+    });
+
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("fail - refresh token rejected after logout", async () => {
+    const app = await buildApp(prisma);
+
+    const user = await registerUser(app);
+
+    await app.inject({
+      method: "POST",
+      url: "/auth/logout",
+      headers: {
+        authorization: `Bearer ${user.accessToken}`,
+        cookie: user.refreshCookie,
+      },
+    });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/refresh",
+      headers: {
+        cookie: user.refreshCookie,
       },
     });
 
