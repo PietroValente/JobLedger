@@ -39,7 +39,8 @@ model RefreshSession {
 }
 
 model Company{
-  name          String         @id
+  id            String      @id @default(uuid())
+  name          String
   website       String?
   location      String?
   notes         String?
@@ -69,11 +70,11 @@ model Application{
   userId  Int
   user    User  @relation(fields:[userId], references:[id])
 
-  companyName   String
-  company       Company   @relation(fields:[companyName], references:[name])
+  companyId   String
+  company       Company   @relation(fields:[companyId], references:[id])
 
   @@index([userId])
-  @@index([companyName])
+  @@index([companyId])
   @@index([status])
 }
 
