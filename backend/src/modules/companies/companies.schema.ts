@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CompanyOutput = z.object({
+export const CompanyOutputSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   website: z.string().min(1).nullable(),
@@ -8,7 +8,7 @@ export const CompanyOutput = z.object({
   notes: z.string().min(1).nullable(),
 });
 
-export const ListCompanyOutput = z.array(CompanyOutput);
+export const ListCompanyOutputSchema = z.array(CompanyOutputSchema);
 
 export const CreateCompanySchema = z.object({
   name: z.string().min(1),
@@ -19,7 +19,7 @@ export const CreateCompanySchema = z.object({
 export type CreateCompanyType = z.infer<typeof CreateCompanySchema>;
 
 export const CompanyIdSchema = z.object({
-  id: z.string().min(1),
+  companyId: z.string().min(1),
 });
 
 export type CompanyIdType = z.infer<typeof CompanyIdSchema>;

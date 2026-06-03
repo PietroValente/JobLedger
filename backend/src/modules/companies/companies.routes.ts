@@ -2,10 +2,10 @@ import { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { ErrorOutputSchema } from "../utils/schema.js";
 import {
-  CompanyOutput,
+  CompanyOutputSchema,
   CreateCompanyType,
   CreateCompanySchema,
-  ListCompanyOutput,
+  ListCompanyOutputSchema,
   CompanyIdSchema,
   CompanyIdType,
   UpdateCompanySchema,
@@ -28,7 +28,7 @@ export async function companiesRoutes(app: FastifyInstance) {
       schema: {
         body: CreateCompanySchema,
         response: {
-          200: CompanyOutput,
+          200: CompanyOutputSchema,
           401: ErrorOutputSchema,
         },
       },
@@ -55,7 +55,7 @@ export async function companiesRoutes(app: FastifyInstance) {
       preHandler: [app.authenticate],
       schema: {
         response: {
-          200: ListCompanyOutput,
+          200: ListCompanyOutputSchema,
           400: ErrorOutputSchema,
         },
       },
@@ -73,30 +73,34 @@ export async function companiesRoutes(app: FastifyInstance) {
   );
 
   app.get(
-    "/:id",
+    "/:companyId",
     {
       preHandler: [app.authenticate],
       schema: {
         params: CompanyIdSchema,
         response: {
-          200: CompanyOutput,
+          200: CompanyOutputSchema,
           400: ErrorOutputSchema,
         },
       },
     },
     async (request: FastifyRequest<{ Params: CompanyIdType }>, reply) => {
-      return await getUserCompany(app, request.params.id, request.user.sub);
+      return await getUserCompany(
+        app,
+        request.params.companyId,
+        request.user.sub,
+      );
     },
   );
   app.put(
-    "/:id",
+    "/:companyId",
     {
       preHandler: [app.authenticate],
       schema: {
         params: CompanyIdSchema,
         body: UpdateCompanySchema,
         response: {
-          200: CompanyOutput,
+          200: CompanyOutputSchema,
           400: ErrorOutputSchema,
         },
       },
@@ -109,7 +113,7 @@ export async function companiesRoutes(app: FastifyInstance) {
     ) => {
       const payload: UpdateUserCompanyArgs = {
         app,
-        companyId: request.params.id,
+        companyId: request.params.companyId,
         userId: request.user.sub,
         data: request.body,
       };
@@ -117,7 +121,7 @@ export async function companiesRoutes(app: FastifyInstance) {
     },
   );
   app.delete(
-    "/:id",
+    "/:companyId",
     {
       preHandler: [app.authenticate],
       schema: {
@@ -128,7 +132,7 @@ export async function companiesRoutes(app: FastifyInstance) {
       },
     },
     async (request: FastifyRequest<{ Params: CompanyIdType }>, reply) => {
-      await deleteUserCompany(app, request.params.id, request.user.sub);
+      await deleteUserCompany(app, request.params.companyId, request.user.sub);
     },
   );
 }

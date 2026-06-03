@@ -70,7 +70,7 @@ model Application{
   userId  Int
   user    User  @relation(fields:[userId], references:[id])
 
-  companyId   String
+  companyId     String
   company       Company   @relation(fields:[companyId], references:[id])
 
   @@index([userId])
